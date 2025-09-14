@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlightDelayPredictor | Accurate Flight Delay Forecasting</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'airline-blue': '#1E40AF',
+                        'airline-light-blue': '#3B82F6',
+                        'airline-dark-blue': '#1E3A8A',
+                    }
+                }
+            }
+        }
+    
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .airline-gradient {
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+        }
+        
+        .loading-bar {
+            display: none;
+            height: 4px;
+            width: 100%;
+            background-color: #E5E7EB;
+            overflow: hidden;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            width: 0%;
+            background-color: #3B82F6;
+            animation: loading 2s ease-in-out infinite;
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        
+        .prediction-card {
+            transition: all 0.3s ease;
+        }
+        
+        .delay-indicator {
+            height: 8px;
+            border-radius: 4px;
+            transition: width 1s ease-in-out;
+        }
+        
+        input:focus, select:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+    </style> 
+</head>
+ <body class="bg-gray-50"> 
+    <!-- <body class="dark font-montserrat bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-gray-200 selection:bg-airline-light-blue selection:text-black"> -->
+    <!-- Header -->
+    <header class="airline-gradient text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-plane-departure text-3xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">FlightDelayPredictor</h1>
+                </div>
+                <nav class="hidden md:block">
+                    <ul class="flex space-x-6">
+                        <li><a href="#" class="hover:underline">Home</a></li>
+                        <li><a href="#" class="hover:underline">How It Works</a></li>
+                        <li><a href="#" class="hover:underline">API</a></li>
+                        <li><a href="#" class="hover:underline">Contact</a></li>
+                    </ul>
+                </nav>
+                <button class="md:hidden">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <section class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-airline-dark-blue mb-4">Predict Flight Delays with AI</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Our advanced machine learning model analyzes hundreds of factors to accurately predict potential flight delays before they happen.</p>
+        </section>
+
+        <!-- Form Section -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-12">
+            <!-- Loading Bar -->
+            <div class="loading-bar" id="loadingBar">
+                <div class="loading-progress"></div>
+            </div>
+
+            <!-- Form Tabs -->
+            <div class="border-b border-gray-200">
+                <div class="flex overflow-x-auto">
+                    <button class="tab-btn px-6 py-4 font-medium text-airline-blue border-b-2 border-airline-blue" data-tab="flight-info">Flight Information</button>
+                    <button class="tab-btn px-6 py-4 font-medium text-gray-500" data-tab="weather-data">Weather Data</button>
+                    <button class="tab-btn px-6 py-4 font-medium text-gray-500" data-tab="historical">Historical Data</button>
+                    <button class="tab-btn px-6 py-4 font-medium text-gray-500" data-tab="aircraft-info">Aircraft Info</button>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <form id="predictionForm" class="p-6">
+                <!-- Flight Information Tab -->
+                <div class="tab-content" id="flight-info">
+                    <h3 class="text-xl font-semibold mb-6 text-airline-dark-blue">Flight Details</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="airline" class="block text-sm font-medium text-gray-700 mb-1">Airline</label>
+                            <select id="airline" name="airline" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" required>
+                                <option value="">Select Airline</option>
+                                <option value="delta">Delta Air Lines</option>
+                                <option value="american">American Airlines</option>
+                                <option value="united">United Airlines</option>
+                                <option value="southwest">Southwest Airlines</option>
+                                <option value="jetblue">JetBlue Airways</option>
+                                <option value="alaska">Alaska Airlines</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="flightNumber" class="block text-sm font-medium text-gray-700 mb-1">Flight Number</label>
+                            <input type="text" id="flightNumber" name="flightNumber" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="UA 245" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="origin" class="block text-sm font-medium text-gray-700 mb-1">Origin Airport</label>
+                            <select id="origin" name="origin" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" required>
+                                <option value="">Select Origin</option>
+                                <option value="JFK">John F. Kennedy International (JFK)</option>
+                                <option value="LAX">Los Angeles International (LAX)</option>
+                                <option value="ORD">Chicago O'Hare International (ORD)</option>
+                                <option value="DFW">Dallas/Fort Worth International (DFW)</option>
+                                <option value="DEN">Denver International (DEN)</option>
+                                <option value="SFO">San Francisco International (SFO)</option>
+                                <option value="ATL">Hartsfield-Jackson Atlanta (ATL)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">Destination Airport</label>
+                            <select id="destination" name="destination" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" required>
+                                <option value="">Select Destination</option>
+                                <option value="JFK">John F. Kennedy International (JFK)</option>
+                                <option value="LAX">Los Angeles International (LAX)</option>
+                                <option value="ORD">Chicago O'Hare International (ORD)</option>
+                                <option value="DFW">Dallas/Fort Worth International (DFW)</option>
+                                <option value="DEN">Denver International (DEN)</option>
+                                <option value="SFO">San Francisco International (SFO)</option>
+                                <option value="ATL">Hartsfield-Jackson Atlanta (ATL)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="departureDate" class="block text-sm font-medium text-gray-700 mb-1">Departure Date</label>
+                            <input type="date" id="departureDate" name="departureDate" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" required>
+                        </div>
+                        
+                        <div>
+                            <label for="departureTime" class="block text-sm font-medium text-gray-700 mb-1">Scheduled Departure Time</label>
+                            <input type="time" id="departureTime" name="departureTime" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="flightDistance" class="block text-sm font-medium text-gray-700 mb-1">Flight Distance (miles)</label>
+                            <input type="number" id="flightDistance" name="flightDistance" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 500" required>
+                        </div>
+                        
+                        <div>
+                            <label for="flightDuration" class="block text-sm font-medium text-gray-700 mb-1">Scheduled Duration (minutes)</label>
+                            <input type="number" id="flightDuration" name="flightDuration" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 120" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Weather Data Tab -->
+                <div class="tab-content hidden" id="weather-data">
+                    <h3 class="text-xl font-semibold mb-6 text-airline-dark-blue">Weather Conditions</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="originTemperature" class="block text-sm font-medium text-gray-700 mb-1">Origin Temperature (°F)</label>
+                            <input type="number" id="originTemperature" name="originTemperature" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 72">
+                        </div>
+                        
+                        <div>
+                            <label for="originConditions" class="block text-sm font-medium text-gray-700 mb-1">Origin Weather Conditions</label>
+                            <select id="originConditions" name="originConditions" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue">
+                                <option value="clear">Clear</option>
+                                <option value="partly_cloudy">Partly Cloudy</option>
+                                <option value="cloudy">Cloudy</option>
+                                <option value="rain">Rain</option>
+                                <option value="storm">Thunderstorm</option>
+                                <option value="snow">Snow</option>
+                                <option value="fog">Fog</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="originWindSpeed" class="block text-sm font-medium text-gray-700 mb-1">Origin Wind Speed (mph)</label>
+                            <input type="number" id="originWindSpeed" name="originWindSpeed" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 10">
+                        </div>
+                        
+                        <div>
+                            <label for="originVisibility" class="block text-sm font-medium text-gray-700 mb-1">Origin Visibility (miles)</label>
+                            <input type="number" id="originVisibility" name="originVisibility" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 10">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="destinationTemperature" class="block text-sm font-medium text-gray-700 mb-1">Destination Temperature (°F)</label>
+                            <input type="number" id="destinationTemperature" name="destinationTemperature" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 68">
+                        </div>
+                        
+                        <div>
+                            <label for="destinationConditions" class="block text-sm font-medium text-gray-700 mb-1">Destination Weather Conditions</label>
+                            <select id="destinationConditions" name="destinationConditions" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue">
+                                <option value="clear">Clear</option>
+                                <option value="partly_cloudy">Partly Cloudy</option>
+                                <option value="cloudy">Cloudy</option>
+                                <option value="rain">Rain</option>
+                                <option value="storm">Thunderstorm</option>
+                                <option value="snow">Snow</option>
+                                <option value="fog">Fog</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="destinationWindSpeed" class="block text-sm font-medium text-gray-700 mb-1">Destination Wind Speed (mph)</label>
+                            <input type="number" id="destinationWindSpeed" name="destinationWindSpeed" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 8">
+                        </div>
+                        
+                        <div>
+                            <label for="destinationVisibility" class="block text-sm font-medium text-gray-700 mb-1">Destination Visibility (miles)</label>
+                            <input type="number" id="destinationVisibility" name="destinationVisibility" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 10">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Historical Data Tab -->
+                <div class="tab-content hidden" id="historical">
+                    <h3 class="text-xl font-semibold mb-6 text-airline-dark-blue">Historical Performance</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="airlineOntimePercent" class="block text-sm font-medium text-gray-700 mb-1">Airline On-Time Percentage</label>
+                            <input type="number" id="airlineOntimePercent" name="airlineOntimePercent" min="0" max="100" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 80">
+                            <p class="text-xs text-gray-500 mt-1">This airline's historical on-time percentage</p>
+                        </div>
+                        
+                        <div>
+                            <label for="routeOntimePercent" class="block text-sm font-medium text-gray-700 mb-1">Route On-Time Percentage</label>
+                            <input type="number" id="routeOntimePercent" name="routeOntimePercent" min="0" max="100" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 75">
+                            <p class="text-xs text-gray-500 mt-1">This specific route's historical on-time percentage</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="monthlyDelayAverage" class="block text-sm font-medium text-gray-700 mb-1">Monthly Delay Average (min)</label>
+                            <input type="number" id="monthlyDelayAverage" name="monthlyDelayAverage" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 15">
+                            <p class="text-xs text-gray-500 mt-1">Average delay for this month across all flights</p>
+                        </div>
+                        
+                        <div>
+                            <label for="dayOfWeekDelay" class="block text-sm font-medium text-gray-700 mb-1">Day of Week Delay Factor</label>
+                            <select id="dayOfWeekDelay" name="dayOfWeekDelay" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue">
+                                <option value="low">Low (Tue, Wed, Sat)</option>
+                                <option value="medium" selected>Medium (Mon, Thu)</option>
+                                <option value="high">High (Fri, Sun)</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Typical delay pattern for this day of week</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Recent Airport Congestion</label>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center">
+                                <input type="radio" id="congestionLow" name="congestion" value="low" class="focus:ring-airline-blue h-4 w-4 text-airline-blue">
+                                <label for="congestionLow" class="ml-2 block text-sm text-gray-700">Low</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="radio" id="congestionMedium" name="congestion" value="medium" checked class="focus:ring-airline-blue h-4 w-4 text-airline-blue">
+                                <label for="congestionMedium" class="ml-2 block text-sm text-gray-700">Medium</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="radio" id="congestionHigh" name="congestion" value="high" class="focus:ring-airline-blue h-4 w-4 text-airline-blue">
+                                <label for="congestionHigh" class="ml-2 block text-sm text-gray-700">High</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Aircraft Info Tab -->
+                <div class="tab-content hidden" id="aircraft-info">
+                    <h3 class="text-xl font-semibold mb-6 text-airline-dark-blue">Aircraft Information</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="aircraftType" class="block text-sm font-medium text-gray-700 mb-1">Aircraft Type</label>
+                            <select id="aircraftType" name="aircraftType" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue">
+                                <option value="b737">Boeing 737</option>
+                                <option value="a320">Airbus A320</option>
+                                <option value="b787">Boeing 787</option>
+                                <option value="a350">Airbus A350</option>
+                                <option value="b777">Boeing 777</option>
+                                <option value="a330">Airbus A330</option>
+                                <option value="e190">Embraer E190</option>
+                                <option value="crj900">Bombardier CRJ900</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="aircraftAge" class="block text-sm font-medium text-gray-700 mb-1">Aircraft Age (years)</label>
+                            <input type="number" id="aircraftAge" name="aircraftAge" min="0" max="30" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 5">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="maintenanceHistory" class="block text-sm font-medium text-gray-700 mb-1">Maintenance History</label>
+                            <select id="maintenanceHistory" name="maintenanceHistory" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue">
+                                <option value="excellent">Excellent</option>
+                                <option value="good">Good</option>
+                                <option value="average">Average</option>
+                                <option value="poor">Poor</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="previousDelays" class="block text-sm font-medium text-gray-700 mb-1">Previous Delays This Aircraft</label>
+                            <input type="number" id="previousDelays" name="previousDelays" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-airline-blue" placeholder="e.g., 2">
+                            <p class="text-xs text-gray-500 mt-1">Number of delays in the last 30 days</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Aircraft Reliability Score</label>
+                        <div class="flex items-center">
+                            <input type="range" id="reliabilityScore" name="reliabilityScore" min="1" max="10" value="7" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <span id="reliabilityValue" class="ml-4 text-airline-blue font-medium">7/10</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="flex justify-between mt-8">
+                    <button type="button" id="prevBtn" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 hidden">
+                        <i class="fas fa-arrow-left mr-2"></i> Previous
+                    </button>
+                    <button type="button" id="nextBtn" class="px-6 py-2 bg-airline-blue text-white rounded-md font-medium hover:bg-airline-dark-blue focus:outline-none focus:ring-2 focus:ring-airline-blue ml-auto">
+                        Next <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                    <button type="submit" id="submitBtn" class="px-6 py-2 bg-green-600 text-white rounded-md font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 hidden">
+                        <i class="fas fa-calculator mr-2"></i> Calculate Prediction
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <section id="results" class="hidden bg-white rounded-xl shadow-lg p-6 mb-12">
+            <h2 class="text-2xl font-bold text-airline-dark-blue mb-6">Flight Delay Prediction Results</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <div class="text-blue-800 font-semibold mb-2">Probability of Delay</div>
+                    <div class="text-3xl font-bold text-blue-800" id="delayProbability">0%</div>
+                </div>
+                
+                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                    <div class="text-yellow-800 font-semibold mb-2">Expected Delay</div>
+                    <div class="text-3xl font-bold text-yellow-800" id="expectedDelay">0 min</div>
+                </div>
+                
+                <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <div class="text-green-800 font-semibold mb-2">On-Time Confidence</div>
+                    <div class="text-3xl font-bold text-green-800" id="onTimeConfidence">0%</div>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3">Delay Risk Indicator</h3>
+                <div class="h-4 bg-gray-200 rounded-full overflow-hidden">
+                    <div id="delayIndicator" class="delay-indicator h-full bg-green-500 w-0"></div>
+                </div>
+                <div class="flex justify-between text-sm text-gray-600 mt-1">
+                    <span>Low Risk</span>
+                    <span>Medium Risk</span>
+                    <span>High Risk</span>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3">Key Factors</h3>
+                <ul class="list-disc list-inside text-gray-700 space-y-2">
+                    <li id="factor1">Weather conditions at origin airport</li>
+                    <li id="factor2">Historical performance of this route</li>
+                    <li id="factor3">Time of day and day of week</li>
+                    <li id="factor4">Aircraft maintenance history</li>
+                </ul>
+            </div>
+            
+            <div class="flex justify-center mt-8">
+                <button id="resetForm" class="px-6 py-2 bg-airline-blue text-white rounded-md font-medium hover:bg-airline-dark-blue focus:outline-none focus:ring-2 focus:ring-airline-blue">
+                    <i class="fas fa-redo mr-2"></i> Make Another Prediction
+                </button>
+            </div>
+        </section>
+
+        <!-- How it Works Section -->
+        <section class="bg-white rounded-xl shadow-lg p-6 mb-12">
+            <h2 class="text-2xl font-bold text-airline-dark-blue mb-6">How Our Prediction Model Works</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="bg-airline-blue rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-database text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Data Collection</h3>
+                    <p class="text-gray-600">We analyze historical flight data, weather patterns, and airline performance metrics.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="bg-airline-blue rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-brain text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Machine Learning</h3>
+                    <p class="text-gray-600">Our AI model identifies patterns and correlations to predict potential delays.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="bg-airline-blue rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Real-time Analysis</h3>
+                    <p class="text-gray-600">We process current conditions to provide up-to-the-minute delay predictions.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-airline-dark-blue text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">FlightDelayPredictor</h3>
+                    <p class="text-gray-300">Using advanced AI to help travelers anticipate and plan for flight delays.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white">Home</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">How It Works</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">API Documentation</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2 text-gray-300"></i>
+                            <span class="text-gray-300">pavankushwaha23072004@gmail.com</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2 text-gray-300"></i>
+                            <span class="text-gray-300">+91 76939-28292</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+                <p>&copy; 2025 FlightDelayPredictor. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab management
+            const tabs = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const form = document.getElementById('predictionForm');
+            const results = document.getElementById('results');
+            const resetBtn = document.getElementById('resetForm');
+            const loadingBar = document.getElementById('loadingBar');
+            
+            let currentTab = 0;
+            
+            // Initialize tab display
+            showTab(currentTab);
+            
+            // Set current date as default for departure date
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('departureDate').value = formattedDate;
+            
+            // Set up reliability score display
+            const reliabilityScore = document.getElementById('reliabilityScore');
+            const reliabilityValue = document.getElementById('reliabilityValue');
+            
+            reliabilityScore.addEventListener('input', function() {
+                reliabilityValue.textContent = `${this.value}/10`;
+            });
+            
+            // Tab navigation
+            tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => {
+                    currentTab = index;
+                    showTab(currentTab);
+                });
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                if (validateForm()) {
+                    currentTab++;
+                    showTab(currentTab);
+                }
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                currentTab--;
+                showTab(currentTab);
+            });
+            
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (validateForm()) {
+                    // Show loading
+                    loadingBar.style.display = 'block';
+                    
+                    // Simulate processing delay
+                    setTimeout(() => {
+                        calculatePrediction();
+                        loadingBar.style.display = 'none';
+                        results.classList.remove('hidden');
+                        
+                        // Scroll to results
+                        results.scrollIntoView({ behavior: 'smooth' });
+                    }, 2000);
+                }
+            });
+            
+            // Reset form
+            resetBtn.addEventListener('click', () => {
+                form.reset();
+                results.classList.add('hidden');
+                currentTab = 0;
+                showTab(currentTab);
+                
+                // Reset reliability display
+                reliabilityValue.textContent = '7/10';
+            });
+            
+            function showTab(n) {
+                // Hide all tab contents
+                tabContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                // Remove active class from all tabs
+                tabs.forEach(tab => {
+                    tab.classList.remove('text-airline-blue', 'border-airline-blue');
+                    tab.classList.add('text-gray-500');
+                });
+                
+                // Show current tab content
+                tabContents[n].classList.remove('hidden');
+                
+                // Activate current tab
+                tabs[n].classList.remove('text-gray-500');
+                tabs[n].classList.add('text-airline-blue', 'border-airline-blue');
+                
+                // Show/hide navigation buttons
+                if (n === 0) {
+                    prevBtn.classList.add('hidden');
+                } else {
+                    prevBtn.classList.remove('hidden');
+                }
+                
+                if (n === tabs.length - 1) {
+                    nextBtn.classList.add('hidden');
+                    submitBtn.classList.remove('hidden');
+                } else {
+                    nextBtn.classList.remove('hidden');
+                    submitBtn.classList.add('hidden');
+                }
+            }
+            
+            function validateForm() {
+                let valid = true;
+                const currentTabContent = tabContents[currentTab];
+                const inputs = currentTabContent.querySelectorAll('input[required], select[required]');
+                
+                inputs.forEach(input => {
+                    if (!input.value) {
+                        valid = false;
+                        input.classList.add('border-red-500');
+                    } else {
+                        input.classList.remove('border-red-500');
+                    }
+                });
+                
+                return valid;
+            }
+            
+            function calculatePrediction() {
+                // Simulate prediction calculation based on form inputs
+                // This is a mock implementation - a real system would use ML models
+                
+                // Get form values for calculation
+                const airline = document.getElementById('airline').value;
+                const origin = document.getElementById('origin').value;
+                const destination = document.getElementById('destination').value;
+                const departureTime = document.getElementById('departureTime').value;
+                const originConditions = document.getElementById('originConditions').value;
+                const destinationConditions = document.getElementById('destinationConditions').value;
+                const airlineOntime = parseInt(document.getElementById('airlineOntimePercent').value) || 80;
+                const routeOntime = parseInt(document.getElementById('routeOntimePercent').value) || 75;
+                const congestion = document.querySelector('input[name="congestion"]:checked').value;
+                const aircraftAge = parseInt(document.getElementById('aircraftAge').value) || 5;
+                
+                // Mock calculation of delay probability
+                let baseProbability = 20; // Base 20% chance of delay
+                
+                // Adjust based on airline performance
+                baseProbability += (100 - airlineOntime) * 0.2;
+                
+                // Adjust based on route performance
+                baseProbability += (100 - routeOntime) * 0.3;
+                
+                // Adjust based on weather
+                if (originConditions === 'rain' || destinationConditions === 'rain') baseProbability += 15;
+                if (originConditions === 'storm' || destinationConditions === 'storm') baseProbability += 25;
+                if (originConditions === 'snow' || destinationConditions === 'snow') baseProbability += 30;
+                if (originConditions === 'fog' || destinationConditions === 'fog') baseProbability += 20;
+                
+                // Adjust based on congestion
+                if (congestion === 'medium') baseProbability += 10;
+                if (congestion === 'high') baseProbability += 20;
+                
+                // Adjust based on aircraft age
+                baseProbability += aircraftAge * 0.5;
+                
+                // Ensure probability is between 0 and 95
+                const delayProbability = Math.min(95, Math.max(5, Math.round(baseProbability)));
+                
+                // Calculate expected delay in minutes
+                let expectedDelay = 0;
+                if (delayProbability > 50) {
+                    expectedDelay = Math.round((delayProbability - 50) * 2.4);
+                }
+                
+                // Calculate on-time confidence
+                const onTimeConfidence = 100 - delayProbability;
+                
+                // Update results display
+                document.getElementById('delayProbability').textContent = `${delayProbability}%`;
+                document.getElementById('expectedDelay').textContent = `${expectedDelay} min`;
+                document.getElementById('onTimeConfidence').textContent = `${onTimeConfidence}%`;
+                
+                // Update delay indicator
+                const delayIndicator = document.getElementById('delayIndicator');
+                let indicatorWidth = delayProbability;
+                let indicatorColor = 'bg-green-500';
+                
+                if (delayProbability > 70) {
+                    indicatorColor = 'bg-red-500';
+                } else if (delayProbability > 40) {
+                    indicatorColor = 'bg-yellow-500';
+                }
+                
+                delayIndicator.className = `delay-indicator h-full ${indicatorColor} w-0`;
+                // Trigger animation
+                setTimeout(() => {
+                    delayIndicator.style.width = `${indicatorWidth}%`;
+                }, 100);
+                
+                // Update key factors
+                document.getElementById('factor1').textContent = getRandomFactor();
+                document.getElementById('factor2').textContent = getRandomFactor();
+                document.getElementById('factor3').textContent = getRandomFactor();
+                document.getElementById('factor4').textContent = getRandomFactor();
+            }
+            
+            function getRandomFactor() {
+                const factors = [
+                    "Weather conditions at origin airport",
+                    "Historical performance of this route",
+                    "Time of day and day of week",
+                    "Aircraft maintenance history",
+                    "Current airport congestion levels",
+                    "Airline's operational performance",
+                    "Previous delays for this aircraft",
+                    "Wind patterns and visibility issues"
+                ];
+                
+                return factors[Math.floor(Math.random() * factors.length)];
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+  
